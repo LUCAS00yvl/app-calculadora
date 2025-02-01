@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:expressions/expressions.dart';
 import 'package:flutter/material.dart';
 
@@ -9,7 +10,7 @@ class Calculadora extends StatefulWidget {
 }
 
 class _CalculadoraState extends State<Calculadora> {
-  final String _limpar = 'Limpar';
+  final String _limpar = 'Clear';
   String _expressao = '';
   String _resultado = '';
 
@@ -20,6 +21,30 @@ class _CalculadoraState extends State<Calculadora> {
         _resultado = '';
       } else if (valor == '=') {
         _calcularResultado();
+      } else if (valor == '⌫') {
+        if (_expressao.isNotEmpty) {
+          _expressao = _expressao.substring(0, _expressao.length - 1);
+        }
+      } else if (valor == '+/-') {
+        if (_expressao.isNotEmpty && !_expressao.contains(RegExp(r'[\+\-\*/]'))) {
+          if (_expressao.startsWith('-')) {
+            _expressao = _expressao.substring(1);
+          } else {
+            _expressao = '-$_expressao';
+          }
+        }
+      } else if (valor == '%') {
+        if (_expressao.isNotEmpty) {
+          _expressao = (double.parse(_expressao) / 100).toString();
+        }
+      } else if (valor == 'sin') {
+        _expressao = sin(double.parse(_expressao) * pi / 180).toString();
+      } else if (valor == 'cos') {
+        _expressao = cos(double.parse(_expressao) * pi / 180).toString();
+      } else if (valor == 'tan') {
+        _expressao = tan(double.parse(_expressao) * pi / 180).toString();
+      } else if (valor == '√') {
+        _expressao = sqrt(double.parse(_expressao)).toString();
       } else {
         _expressao += valor;
       }
@@ -30,14 +55,13 @@ class _CalculadoraState extends State<Calculadora> {
     try {
       _resultado = _avaliarExpressao(_expressao).toString();
     } catch (e) {
-      _resultado = 'Não é possível calcular';
+      _resultado = 'Erro';
+      debugPrint('Erro: $e');
     }
   }
 
   double _avaliarExpressao(String expressao) {
-    expressao = expressao.replaceAll('x', '*');
-    expressao = expressao.replaceAll('÷', '/');
-    //Avaliar a expressão com a biblioteca expression
+    expressao = expressao.replaceAll('x', '*').replaceAll('÷', '/');
     ExpressionEvaluator avaliador = const ExpressionEvaluator();
     double resultado = avaliador.eval(Expression.parse(expressao), {});
     return resultado;
@@ -75,6 +99,10 @@ class _CalculadoraState extends State<Calculadora> {
             crossAxisCount: 4,
             childAspectRatio: 2,
             children: [
+              _botao('('),
+              _botao(')'),
+              _botao('%'),
+              _botao('⌫'),
               _botao('7'),
               _botao('8'),
               _botao('9'),
@@ -88,16 +116,20 @@ class _CalculadoraState extends State<Calculadora> {
               _botao('3'),
               _botao('-'),
               _botao('0'),
-              _botao('.'),
+              _botao('+/-'),
               _botao('='),
               _botao('+'),
+              _botao('sin'),
+              _botao('cos'),
+              _botao('tan'),
+              _botao('√'),
             ],
           ),
         ),
         Expanded(
           child: _botao(_limpar),
         )
-      ],
-    );
-  }
+     ],
+);
+}
 }
